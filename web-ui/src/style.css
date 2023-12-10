@@ -1,0 +1,13 @@
+blockquote.error {
+    border-left-color: rgba(255, 0, 0, .2);
+    background: rgba(255, 0, 0, 0.1)
+}
+
+button.inline {
+    display: inline-block;
+    width: auto;
+    padding: .375rem .5rem;
+    font-size: .875em;
+    line-height: initial;
+    margin-bottom: unset;
+}

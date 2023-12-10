@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RotorHazard OSD Injector</title>
+  </head>
+  <body>
+    <!-- Authentication Overlay -->
+    <dialog id="authentication-dialog">
+      <article>
+        <header>Please Authenticate</header>
+        <form>
+          <label for="pin">
+            Pin <small>4 digits</small>
+            <input
+              required
+              type="text"
+              id="pin"
+              name="pin"
+              pattern="[0-9]{4}"
+            />
+          </label>
+
+          <blockquote class="error" hidden></blockquote>
+
+          <footer>
+            <button type="button" class="secondary">Show Pin (OSD)</button>
+            <button type="submit">Authenticate</button>
+          </footer>
+        </form>
+      </article>
+    </dialog>
+
+    <main class="container">
+      <h1>
+        RotorHazard OSD injector
+        <button type="button" class="inline" id="system-reboot">Reboot ESP</button>
+      </h1>
+      <small>
+        <div id="ota-enable">Want to update wirelessly? <button class="inline">Enable OTA</button></div>
+        <div id="ota-disable">Want to disable wireless updates? <button class="inline">Disable OTA</button></div>
+      </small>
+
+      <section id="wifi">
+        <h2>
+          WiFi
+          <button type="button" class="inline" id="wifi-switch-to-wifi" hidden>
+            Connect to WiFi
+          </button>
+        </h2>
+
+        <details>
+        <form id="wifi-form">
+            <strong>Update Credentials</label>
+
+            <div class="grid">
+              <label for="wifi-ssid-input">
+                SSID
+                <input required type="text" id="wifi-ssid-input" name="ssid" />
+              </label>
+
+              <label for="wifi-password-input">
+                Password
+                <input required type="password" id="wifi-password-input" name="password" />
+              </label>
+            </div>
+
+            <button type="submit">Save Credentials</button>
+        </form>
+        </details>
+      </section>
+
+      <section id="hotspot">
+        <h2>
+          Hotspot
+
+          <button type="button" class="inline" id="hotspot-enable-btn">Enable</button>
+        </h2>
+
+        <details>
+        <form id="hotspot-form">
+            <strong>Update Credentials</label>
+
+            <div class="grid">
+              <label for="hotspot-ssid-input">
+                SSID
+                <input required type="text" id="hotspot-ssid-input" name="ssid" />
+              </label>
+
+              <label for="hotspot-password-input">
+                Password
+                <input required type="password" id="hotspot-password-input" name="password" />
+              </label>
+            </div>
+
+            <button type="submit">Save Credentials</button>
+        </form>
+        </details>
+      </section>
+
+      <section id="rotorhazard">
+        <h2>RotorHazard</h2>
+        <small id="rh-selected-pilot-display">
+          Selected Pilot <kbd>__PILOT_LABEL__</kbd>
+        </small>
+
+        <details id="rh-section-details">
+          <form id="rh-connection-form">
+            <label for="rh-connection-hostname">
+              Hostname
+              <input
+                required
+                type="text"
+                id="rh-connection-hostname"
+                name="hostname"
+              />
+            </label>
+
+            <label for="rh-connection-port">
+              Port
+              <input
+                type="number"
+                id="rh-connection-port"
+                name="port"
+                min="1"
+                max="65535"
+              />
+
+              <small>Default: 5000</small>
+            </label>
+
+            <label for="rh-connection-socket-io-path">
+              Socket.io Path
+              <input
+                type="text"
+                id="rh-connection-socket-io-path"
+                name="socketIOPath"
+                placeholder="/socket.io/?EIO=4"
+              />
+
+              <small>Default: /socket.io/?EIO=4</small>
+            </label>
+
+            <button type="submit">Save Connection</button>
+          </form>
+
+          <form id="rh-select-pilot-form">
+            <label for="rh-pilot-select">
+              Shown Pilot
+              <select id="rh-pilot-select" name="pilotId">
+              </select>
+            </label>
+            <button type="button" class="secondary" id="rh-pilots-reload-btn">
+              Reload Pilots
+            </button>
+
+            <button type="submit">Save selection</button>
+          </form>
+        </details>
+      </section>
+
+      <section id="update">
+        <h2>Update</h2>
+
+        <details>
+          <form id="update-form">
+            <input type='file' name='update'>
+            <input type='submit' value='Update'>
+          </form>
+        </details>
+      </section>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

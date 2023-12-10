@@ -1,0 +1,47 @@
+[
+	"current_laps",
+	{
+		"current": {
+			"node_index": [
+				{
+					"laps": [
+						{
+							"lap_index": 0,
+							"lap_number": 0,
+							"lap_raw": 2372.47204198502,
+							"lap_time": "0:02.372",
+							"lap_time_stamp": 2372.47204198502,
+							"splits": [],
+							"late_lap": false
+						},
+						{
+							"lap_index": 1,
+							"lap_number": 1,
+							"lap_raw": 7375.471625011414,
+							"lap_time": "0:07.375",
+							"lap_time_stamp": 9747.943666996434,
+							"splits": [],
+							"late_lap": false
+						},
+						{
+							"lap_index": 2,
+							"lap_number": 2,
+							"lap_raw": 3709.040166984778,
+							"lap_time": "0:03.709",
+							"lap_time_stamp": 13456.983833981212,
+							"splits": [],
+							"late_lap": false
+						}
+					],
+					"fastest_lap_index": 2,
+					"pilot": {
+						"id": 1,
+						"name": "Jan Jaap",
+						"callsign": "Jappy"
+					},
+					"finished_flag": false
+				}
+			]
+		}
+	}
+]
