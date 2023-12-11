@@ -54,7 +54,6 @@ jobs:
         - name: Run PlatformIO
           run: |
             mkdir -p ~/artifacts/firmware
-            cd src
             platformio pkg install --platform native
             platformio pkg update
             pio run --environment betafpv-elrs-lite-24_uart
