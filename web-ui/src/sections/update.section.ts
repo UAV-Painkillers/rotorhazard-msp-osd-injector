@@ -1,4 +1,4 @@
-import { Api } from "../api";
+import { Api, ApiUpdateMode } from "../api";
 
 let section: HTMLDivElement;
 let updateForm: HTMLFormElement;
@@ -20,8 +20,17 @@ export function setupUpdateSection() {
         const file = updateForm.querySelector("input[type=file]") as HTMLInputElement;
         const firmware = file.files![0];
 
+        // get the mode from the form select field
+        const modeSelect = updateForm.querySelector("select[name=mode]") as HTMLSelectElement;
+        const mode = modeSelect.value;
+
         updateButton.setAttribute("aria-busy", "true");
-        const response = await Api.uploadFirmware(firmware);
+        const response = await Api.uploadFirmware(firmware, mode as ApiUpdateMode);
         updateButton.removeAttribute("aria-busy");
+
+        // reload on success
+        if (response === true) {
+            window.location.reload();
+        }
     });
 }

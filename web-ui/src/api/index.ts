@@ -64,6 +64,8 @@ export enum ApiEventName {
   ota = "ota",
 }
 
+export type ApiUpdateMode = "fs" | "code";
+
 type ApiEventNameDataTypeMap = {
   [ApiEventName.is_authenticated]: Pick<ApiAllData, "apiIsAuthenticated">;
   [ApiEventName.wifi]: Pick<ApiAllData, "wifi">;
@@ -500,7 +502,7 @@ export class Api {
     }
   }
 
-  public static async uploadFirmware(file: File) {
+  public static async uploadFirmware(file: File, mode: ApiUpdateMode = 'fs'): Promise<true | string> {
     try {
       // file needs to be uploaded as multipart/form-data
       const formData = new FormData();
@@ -508,7 +510,7 @@ export class Api {
 
       // send the request
       const response = await this.request(
-        "/system/actions/update",
+        "/system/actions/update?mode=" + mode,
         "POST",
         formData,
         false

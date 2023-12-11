@@ -90,7 +90,9 @@ void WebUI::setupRoutes()
         
         this->setDefaults();
 
-        this->requireAuthentication();
+        if (!this->requireAuthentication()) {
+            return;
+        }
 
         StaticJsonDocument<1024> doc;
         DeserializationError error = deserializeJson(doc, this->server.arg("plain"));
@@ -141,7 +143,9 @@ void WebUI::setupRoutes()
         
         this->setDefaults();
 
-        this->requireAuthentication();
+        if (!this->requireAuthentication()) {
+            return;
+        }
 
         if (this->connectToWifi == NULL || this->connectToWifi == nullptr) {
             logLine("WebUi::server POST /api/wifi/actions/connect no connectToWifi handler");
@@ -162,7 +166,9 @@ void WebUI::setupRoutes()
         
         this->setDefaults();
 
-        this->requireAuthentication();
+        if (!this->requireAuthentication()) {
+            return;
+        }
 
         if (this->enableHotspot == NULL || this->enableHotspot == nullptr) {
             logLine("WebUi::server POST /api/wifi/actions/hotspot no enableHotspot handler");
@@ -187,7 +193,9 @@ void WebUI::setupRoutes()
         
         this->setDefaults();
 
-        this->requireAuthentication();
+        if (!this->requireAuthentication()) {
+            return;
+        }
 
         StaticJsonDocument<1024> doc;
         DeserializationError error = deserializeJson(doc, this->server.arg("plain"));
@@ -237,7 +245,9 @@ void WebUI::setupRoutes()
         
         this->setDefaults();
 
-        this->requireAuthentication();
+        if (!this->requireAuthentication()) {
+            return;
+        }
 
         logLine("rebooting now...");
         ESP.restart(); });
@@ -248,7 +258,9 @@ void WebUI::setupRoutes()
         
         this->setDefaults();
 
-        this->requireAuthentication();
+        if (!this->requireAuthentication()) {
+            return;
+        }
 
         StaticJsonDocument<1024> doc;
         DeserializationError error = deserializeJson(doc, this->server.arg("plain"));
@@ -290,7 +302,9 @@ void WebUI::setupRoutes()
         
         this->setDefaults();
 
-        this->requireAuthentication();
+        if (!this->requireAuthentication()) {
+            return;
+        }
 
         StaticJsonDocument<1024> doc;
         DeserializationError error = deserializeJson(doc, this->server.arg("plain"));
@@ -338,7 +352,9 @@ void WebUI::setupRoutes()
         
         this->setDefaults();
 
-        this->requireAuthentication();
+        if (!this->requireAuthentication()) {
+            return;
+        }
 
         StaticJsonDocument<1024> doc;
         DeserializationError error = deserializeJson(doc, this->server.arg("plain"));
@@ -380,7 +396,9 @@ void WebUI::setupRoutes()
         
         this->setDefaults();
 
-        this->requireAuthentication();
+        if (!this->requireAuthentication()) {
+            return;
+        }
 
         StaticJsonDocument<1024> doc;
         DeserializationError error = deserializeJson(doc, this->server.arg("plain"));
@@ -422,7 +440,9 @@ void WebUI::setupRoutes()
         
         this->setDefaults();
 
-        this->requireAuthentication();
+        if (!this->requireAuthentication()) {
+            return;
+        }
 
         if (this->enableOta == NULL || this->enableOta == nullptr) {
             logLine("WebUi::server POST /api/ota/actions/enable no enableOta handler");
@@ -443,7 +463,9 @@ void WebUI::setupRoutes()
 
         this->setDefaults();
 
-        this->requireAuthentication();
+        if (!this->requireAuthentication()) {
+            return;
+        }
 
         if (this->disableOta == NULL || this->disableOta == nullptr) {
             logLine("WebUi::server POST /api/ota/actions/disable no disableOta handler");
@@ -561,45 +583,139 @@ void WebUI::setupRoutes()
         logLine("WebUi::server GET /api/all finished"); });
 
     server.on(
-        "/system/actions/update", HTTP_POST, [this]()
+        "/api/system/actions/update", HTTP_POST, [this]()
         {
-        this->server.sendHeader("Connection", "close");
-        this->server.send(200, "application/json", "{\"success\": " + String((Update.hasError()) ? "false" : "true") + "}");
-        ESP.restart(); },
+            logLine("WebUI::server POST /api/system/actions/update started");
+            this->setDefaults();
+
+            this->server.sendHeader("Connection", "close");
+
+            if (!this->requireAuthentication()) {
+                logLine("WebUI::server POST /api/system/actions/update failed auth");
+                return;
+            }
+
+            if (this->uploadFailed) {
+                logLine("WebUI::server POST /api/system/actions/update failed upload");
+
+                switch (this->uploadFailedReason) {
+                    // case OTA_UPLOAD_FAILED_REASON_AUTHENTICATION:
+                    case 0:
+                        logLine("Update failed, unauthorized");
+                        this->server.send(403, "application/json", "{\"success\": false, \"error\": \"unauthorized\"}");
+                        break;
+
+                    // case OTA_UPLOAD_FAILED_REASON_FIRMWARE_FILE_NAME:
+                    case 1:
+                        logLine("Update of firmware can only be done using a firmware.bin file");
+                        this->server.send(400, "application/json", "{\"success\": false, \"error\": \"wrong firmware file\"}");
+                        break;
+
+                    // case OTA_UPLOAD_FAILED_REASON_FILESYSTEM_FILE_NAME:
+                    case 2:
+                        logLine("Update of filesystem can only be done using a filesystem.bin file");
+                        this->server.send(400, "application/json", "{\"success\": false, \"error\": \"wrong filesystem file\"}");
+                        break;
+                }
+
+                this->uploadFailed = false;
+                return;
+            }
+
+            this->server.send(200, "application/json", "{\"success\": " + String((Update.hasError()) ? "false" : "true") + "}");
+
+            if (this->uploadMode == FIRMWARE_UPLOAD_MODE_SKETCH) {
+                ESP.restart();
+            } },
         [this]()
         {
+            if (this->uploadFailed)
+            {
+                logLine("WebUI::server POST /api/system/actions/update failed flag is present");
+                yield();
+                return;
+            }
+
+            if (!this->isAuthenticated())
+            {
+                logLine("WebUI::server POST /api/system/actions/update not authenticated");
+                this->uploadFailed = true;
+                this->uploadFailedReason = FIRMWARE_UPLOAD_FAILED_REASON_AUTHENTICATION;
+                return;
+            }
+
+            this->uploadMode = FIRMWARE_UPLOAD_MODE_SKETCH;
+            // Get mode from arg
+            if (this->server.hasArg("mode"))
+            {
+                String argValue = this->server.arg("mode");
+                if (argValue == "fs")
+                {
+                    this->uploadMode = FIRMWARE_UPLOAD_MODE_FILESYSTEM;
+                }
+            }
+
             HTTPUpload &upload = this->server.upload();
+
+            if (this->uploadMode == FIRMWARE_UPLOAD_MODE_SKETCH && !upload.filename.equals("firmware.bin"))
+            {
+                logLine("Update of firmware can only be done using a firmware.bin file");
+                this->uploadFailed = true;
+                this->uploadFailedReason = FIRMWARE_UPLOAD_FAILED_REASON_FIRMWARE_FILE_NAME;
+                return;
+            }
+
+            if (this->uploadMode == FIRMWARE_UPLOAD_MODE_FILESYSTEM && !upload.filename.equals("filesystem.bin"))
+            {
+                logLine("Update of filesystem can only be done using a filesystem.bin file");
+                this->uploadFailed = true;
+                this->uploadFailedReason = FIRMWARE_UPLOAD_FAILED_REASON_FILESYSTEM_FILE_NAME;
+                return;
+            }
+
             if (upload.status == UPLOAD_FILE_START)
             {
                 WiFiUDP::stopAll();
-                logInline("Update: ");
+                logInline("Update using file: ");
                 logLine(upload.filename.c_str());
 
                 uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
-                if (!Update.begin(maxSketchSpace))
-                { // start with max available size
-                    // Update.printError(Serial);
+
+                FSInfo fs_info;
+                LittleFS.info(fs_info);
+                uint32_t maxFSSpace = fs_info.totalBytes;
+
+                uint32_t update_size = this->uploadMode == FIRMWARE_UPLOAD_MODE_FILESYSTEM ? maxFSSpace : maxSketchSpace;
+                if (!Update.begin(update_size, this->uploadMode == FIRMWARE_UPLOAD_MODE_FILESYSTEM ? U_FS : U_FLASH))
+                {
+                    StreamString errorStr;
+                    Update.printError(errorStr);
                     logLine("Update: ERROR");
+                    logLine(errorStr.c_str());
                 }
             }
             else if (upload.status == UPLOAD_FILE_WRITE)
             {
                 if (Update.write(upload.buf, upload.currentSize) != upload.currentSize)
                 {
-                    // Update.printError(Serial);
+                    StreamString errorStr;
+                    Update.printError(errorStr);
                     logLine("Update: ERROR");
+                    logLine(errorStr.c_str());
                 }
             }
             else if (upload.status == UPLOAD_FILE_END)
             {
                 if (Update.end(true))
-                { // true to set the size to the current progress
+                {
                     logLine("Update: SUCCESS");
                 }
                 else
                 {
-                    // Update.printError(Serial);
+                    StreamString errorStr;
+                    Update.printError(errorStr);
                     logLine("Update: ERROR");
+                    logLine(errorStr.c_str());
                 }
             }
             yield();
@@ -697,6 +813,109 @@ inline String getContentType(String filename)
     return "text/plain";
 }
 
+String WebUI::getDefaultIndexHTML()
+{
+    String html;
+
+    html.concat("<!DOCTYPE html>");
+    html.concat("<html lang='en'>");
+    html.concat("<head>");
+    html.concat("<meta charset='utf-8'>");
+    html.concat("<meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>");
+    html.concat("<title>RotorHazard MSP OSD Injector</title>");
+    html.concat("<script type='text/javascript'>");
+    html.concat("let uploadFilesystemForm;");
+    html.concat("const hostname = location.hostname;");
+    html.concat("const protocol = location.protocol;");
+    html.concat("const apiUrl = protocol + '//' + hostname + '/api';");
+
+    html.concat("function requestPin() {");
+    html.concat("const fullUrl = apiUrl + '/pin';");
+    html.concat("fetch(fullUrl, {");
+    html.concat("method: 'GET',");
+    html.concat("headers: {");
+    html.concat("'Content-Type': 'application/json'");
+    html.concat("}");
+    html.concat("})");
+    html.concat(".then(response => {");
+    html.concat("if (response.ok) {");
+    html.concat("alert('PIN requested');");
+    html.concat("} else {");
+    html.concat("alert('Error: ' + response.statusText);");
+    html.concat("}");
+    html.concat("})");
+    html.concat(".catch(error => alert('Error: ' + error));");
+    html.concat("}");
+
+    html.concat("function onSubmit(e) {");
+    html.concat("e.preventDefault();");
+    html.concat("const submitBtn = uploadFilesystemForm.querySelector(\"button[type='submit']\");");
+    html.concat("const originalButtonText = submitBtn.textContent;");
+    html.concat("const fullUrl = apiUrl + '/system/actions/update?mode=fs';");
+    html.concat("const form = document.forms[0];");
+    html.concat("const formData = new FormData(form);");
+    // send as multipart/form-data
+    html.concat("submitBtn.textContent = '...uploading...';");
+    html.concat("fetch(fullUrl, {");
+    html.concat("method: 'POST',");
+    html.concat("body: formData,");
+    html.concat("headers: {");
+    html.concat("Authorization: `Basic ${btoa(`rh-osd:${formData.get('pinCode')}`)}`");
+    html.concat("}");
+    html.concat("})");
+    // reload page after upload
+    html.concat(".then(response => {");
+    html.concat("if (response.ok) {");
+    html.concat("alert('Upload successful');");
+    html.concat("location.reload();");
+    html.concat("} else {");
+    html.concat("alert('Error: ' + response.statusText);");
+    html.concat("}");
+    html.concat("})");
+    html.concat(".catch(error => alert('Error: ' + error))");
+    html.concat(".finally(() => {");
+    html.concat("submitBtn.textContent = originalButtonText;");
+    html.concat("});");
+    html.concat("}");
+
+    // attach event listener to form submit
+    html.concat("document.addEventListener('DOMContentLoaded', function() {");
+    html.concat("uploadFilesystemForm = document.getElementById('upload-fs-form');");
+    html.concat("uploadFilesystemForm.addEventListener('submit', onSubmit);");
+
+    // attach event listener to pin code request button
+    html.concat("document.getElementById('pin-code-request-btn').addEventListener('click', requestPin);");
+    html.concat("});");
+
+    html.concat("</script>");
+    html.concat("</head>");
+
+    html.concat("<body>");
+
+    html.concat("<h1>Rotorhazard MSP OSD Injector</h1>");
+    html.concat("<small>First time setup</small>");
+
+    html.concat("<p>Please upload the filesystem / webUI binary</p>");
+
+    html.concat("<form id='upload-fs-form'>");
+    // inform the user that file uploads might not work inside the systems wifi login window and they should try using a real browser
+    // put link of current page for reference
+    html.concat("<p>File uploads might not work inside the systems wifi login window. Please try using a real browser like Chrome, Firefox, Safari, etc.</p>");
+    html.concat("<p>The address to this site is <a href='http://10.0.0.1'>http://10.0.0.1</a></p>");
+
+    html.concat("<input required type='file' name='update'><br />");
+
+    html.concat("<input required type='text' name='pinCode' placeholder='pin code'>");
+    html.concat("<button type='button' id='pin-code-request-btn'>Request PIN (OSD)</button><br />");
+    html.concat("<button type='submit'>Upload</button>");
+    html.concat("</form>");
+
+    html.concat("</body>");
+    html.concat("</html>");
+
+    return html;
+}
+
 bool WebUI::handleFileRead(String uriInput)
 {
     logLine("WebUI::handleFileRead: " + uriInput);
@@ -717,6 +936,13 @@ bool WebUI::handleFileRead(String uriInput)
     else if (LittleFS.exists(uriForFileLookup))
     {
         found = true;
+    }
+
+    if (!found && uriInput == "/index.html")
+    {
+        logLine("WebUI::handleFileRead: index.html not found in fs, sending default index.html");
+        String indexHtml = this->getDefaultIndexHTML();
+        this->server.send(200, "text/html", indexHtml);
     }
 
     // if the file exists, send it
@@ -794,12 +1020,21 @@ String WebUI::getPinAsString()
     return pinAsString;
 }
 
-void WebUI::requireAuthentication()
+bool WebUI::isAuthenticated()
 {
-    if (!this->server.authenticate("rh-osd", this->getPinAsString().c_str()))
+    return this->server.authenticate("rh-osd", this->getPinAsString().c_str());
+}
+
+bool WebUI::requireAuthentication()
+{
+    if (!this->isAuthenticated())
     {
-        return server.requestAuthentication();
+        logLine("Request is not authenticated... sending 403");
+        this->server.send(403, "application/json", "{\"success\": false, \"error\": \"unauthorized\"}");
+        return false;
     }
+
+    return true;
 }
 
 void WebUI::setSetWifiCredentialsHandler(set_wifi_credentials_handler_t handler)

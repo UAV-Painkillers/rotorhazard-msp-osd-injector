@@ -8,6 +8,17 @@
 #include "rotorhazard.hpp"
 #include "wifi-connection.hpp"
 
+enum firmware_upload_mode_t {
+    FIRMWARE_UPLOAD_MODE_SKETCH = 0,
+    FIRMWARE_UPLOAD_MODE_FILESYSTEM = 1
+};
+
+enum firmware_upload_failed_reason_t {
+    FIRMWARE_UPLOAD_FAILED_REASON_FIRMWARE_FILE_NAME = 0,
+    FIRMWARE_UPLOAD_FAILED_REASON_FILESYSTEM_FILE_NAME = 1,
+    FIRMWARE_UPLOAD_FAILED_REASON_AUTHENTICATION = 2,
+};
+
 // onPinChange callback definition
 typedef std::function<void(String)> pin_changed_callback_t;
 
@@ -97,10 +108,16 @@ class WebUI {
 
         bool handleFileRead(String uri);
         void generateNewPin();
-        void requireAuthentication();
+        bool requireAuthentication();
+        bool isAuthenticated();
         void setupRoutes();
         void setDefaults();
         String getPinAsString();
+        String getDefaultIndexHTML();
+
+        bool uploadFailed;
+        firmware_upload_failed_reason_t uploadFailedReason;
+        firmware_upload_mode_t uploadMode;
 
         pin_changed_callback_t pinChangedCallback;
 
