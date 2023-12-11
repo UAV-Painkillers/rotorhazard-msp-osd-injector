@@ -57,15 +57,20 @@ jobs:
             platformio pkg update
             pio run --environment betafpv-elrs-lite-24_uart
             pio run --target buildfs --environment betafpv-elrs-lite-24_uart
-            OUTDIR=~/artifacts/firmware/LBT/betafpv-elrs-lite-24_uart
+            OUTDIR=./artifacts/firmware/LBT/betafpv-elrs-lite-24_uart
             mkdir -p $OUTDIR
             mv .pio/build/betafpv-elrs-lite-24_uart/firmware.bin $OUTDIR/firmware.bin >& /dev/null || :
             mv .pio/build/betafpv-elrs-lite-24_uart/littlefs.bin $OUTDIR/filesystem.bin >& /dev/null || :
     
         - name: Bundle / Zip Artifacts directory
           run: |
-            cd ~/artifacts
+            cd ./artifacts
             zip -r artifacts.zip .
+
+        - name: Debugging log files
+          run: |
+            ls -la
+            ls -la ./artifacts
 
         - name: Upload Release Asset
           id: upload-release-asset 
@@ -74,7 +79,7 @@ jobs:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           with:
             upload_url: ${{ github.event.release.upload_url }}
-            asset_path: ~/artifacts.zip
+            asset_path: ./artifacts.zip
             asset_name: rh-osd-injector-${{ github.ref }}.zip
             asset_content_type: application/zip
     
