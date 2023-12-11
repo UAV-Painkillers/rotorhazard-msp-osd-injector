@@ -79,7 +79,7 @@ jobs:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           with:
             upload_url: ${{ github.event.release.upload_url }}
-            asset_path: ./artifacts.zip
+            asset_path: ./artifacts/artifacts.zip
             asset_name: rh-osd-injector-${{ github.ref }}.zip
             asset_content_type: application/zip
     
