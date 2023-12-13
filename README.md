@@ -20,6 +20,15 @@ Open Betaflight and navigate to the ports configuration tab. Enable MSP for the 
 
 This step is CRUCIAL. Without adding the craft name OSD element, we cannot display any information in the OSD.
 
+
+# WARNING
+The current install steps dO NOT WORK
+The firmware is too big to be uploded using the elrs web ui.
+plewse follow the development settings in order to install it using a serial connection for now.
+sorry for the inconvenience.
+
+
+
 ### Download the Firmware
 
 Go to the [Releases section](https://github.com/UAV-Painkillers/rotorhazard-msp-osd-injector/releases) of the GitHub repository. 
