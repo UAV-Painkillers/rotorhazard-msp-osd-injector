@@ -57,12 +57,12 @@ jobs:
             mkdir -p ~/artifacts/firmware
             platformio pkg install --platform native
             platformio pkg update
-            pio run --environment betafpv-elrs-lite-24_uart
-            pio run --target buildfs --environment betafpv-elrs-lite-24_uart
-            OUTDIR=~/artifacts/firmware/LBT/betafpv-elrs-lite-24_uart
+            pio run --environment betafpv-elrs-lite-24_ota
+            pio run --target buildfs --environment betafpv-elrs-lite-24_ota
+            OUTDIR=~/artifacts/firmware/LBT/betafpv-elrs-lite-24_ota
             mkdir -p $OUTDIR
-            mv .pio/build/betafpv-elrs-lite-24_uart/firmware.bin $OUTDIR/firmware.bin >& /dev/null || :
-            mv .pio/build/betafpv-elrs-lite-24_uart/littlefs.bin $OUTDIR/filesystem.bin >& /dev/null || :
+            mv .pio/build/betafpv-elrs-lite-24_ota/firmware.bin $OUTDIR/firmware.bin >& /dev/null || :
+            mv .pio/build/betafpv-elrs-lite-24_ota/littlefs.bin $OUTDIR/filesystem.bin >& /dev/null || :
     
         - name: Store Artifacts
           uses: actions/upload-artifact@v3

@@ -55,12 +55,12 @@ jobs:
             mkdir -p ~/artifacts/firmware
             platformio pkg install --platform native
             platformio pkg update
-            OUTDIR=./artifacts/betafpv-elrs-lite-24_uart
+            OUTDIR=./artifacts/betafpv-elrs-lite-24_ota
             mkdir -p $OUTDIR
-            pio run --environment betafpv-elrs-lite-24_uart
-            mv .pio/build/betafpv-elrs-lite-24_uart/firmware.bin $OUTDIR/firmware.bin >& /dev/null || :
-            pio run --target buildfs --environment betafpv-elrs-lite-24_uart
-            mv .pio/build/betafpv-elrs-lite-24_uart/littlefs.bin $OUTDIR/filesystem.bin >& /dev/null || :
+            pio run --environment betafpv-elrs-lite-24_ota
+            mv .pio/build/betafpv-elrs-lite-24_ota/firmware.bin $OUTDIR/firmware.bin >& /dev/null || :
+            pio run --target buildfs --environment betafpv-elrs-lite-24_ota
+            mv .pio/build/betafpv-elrs-lite-24_ota/littlefs.bin $OUTDIR/filesystem.bin >& /dev/null || :
     
         - name: Bundle / Zip Artifacts directory
           run: |
