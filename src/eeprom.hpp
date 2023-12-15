@@ -5,7 +5,7 @@
 
 #include "logging.hpp"
 
-#define EEPROM_VERSION 8
+#define EEPROM_VERSION 9
 
 struct eeprom_data_t {
     // EEPROM version
@@ -32,6 +32,10 @@ struct eeprom_data_t {
     uint32_t fc_msp_baud;
     // logging baud
     uint32_t logging_baud;
+    // uses main serial for fc communication
+    bool fc_serial_uses_main_serial;
+    int fc_soft_serial_rx_pin;
+    int fc_soft_serial_tx_pin;
 };
 
 class EEPROMManager {

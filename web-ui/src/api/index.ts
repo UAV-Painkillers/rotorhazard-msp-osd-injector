@@ -40,6 +40,7 @@ export interface ApiAllDataRotorHazard {
 export interface ApiAllDataSerial {
   flightControllerBaudRate: number;
   loggingBaudRate: number;
+  fcSerialUsesMainSerial: boolean;
 }
 
 export interface ApiAllDataOTA {
@@ -524,6 +525,29 @@ export class Api {
     } catch (e) {
       console.error(e);
       return (e as Error).message;
+    }
+  }
+
+  public static async toggleFcUsesMainSerial() {
+    try {
+      const response = await Api.request(
+        "/logging/actions/toggle-main-port-logging",
+        "POST"
+      );
+      if (response.success) {
+        this.emit(ApiEventName.serial, {
+          serial: {
+            ...(this._lastEventPayloads[ApiEventName.serial] ?? {}),
+            fcSerialUsesMainSerial: response.data.fcUsesMainSerial,
+          },
+        });
+        return response.data.fcUsesMainSerial;
+      }
+
+      return response.data.error ?? "Something went wrong";
+    } catch (e) {
+      console.error(e);
+      return false;
     }
   }
 }

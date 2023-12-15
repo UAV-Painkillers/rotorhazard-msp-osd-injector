@@ -70,6 +70,12 @@ typedef std::function<void()> disable_ota_handler_t;
 // handler that returns if ota is enabled
 typedef std::function<bool()> get_ota_enabled_handler_t;
 
+// handler to get fc serial uses main serial
+typedef std::function<bool()> get_fc_serial_uses_main_serial_handler_t;
+
+// handler to togglee fc serial uses main serial that returns the new value
+typedef std::function<bool()> toggle_fc_serial_uses_main_serial_handler_t;
+
 class WebUI {
     public:
         void setup();
@@ -97,6 +103,8 @@ class WebUI {
 
         void setGetLoggingBaudRateHandler(get_baud_rate_handler_t handler);
         void setSetLoggingBaudRateHandler(set_baud_rate_handler_t handler);
+        void setGetFcSerialUsesMainSerialHandler(get_fc_serial_uses_main_serial_handler_t handler);
+        void setToggleFcSerialUsesMainSerialHandler(toggle_fc_serial_uses_main_serial_handler_t handler);
 
         void setEnableOtaHandler(enable_ota_handler_t handler);
         void setDisableOtaHandler(disable_ota_handler_t handler);
@@ -140,6 +148,9 @@ class WebUI {
 
         get_baud_rate_handler_t getLoggingBaudRate;
         set_baud_rate_handler_t setLoggingBaudRate;
+
+        get_fc_serial_uses_main_serial_handler_t getFcSerialUsesMainSerial;
+        toggle_fc_serial_uses_main_serial_handler_t toggleFcSerialUsesMainSerial;
 
         enable_ota_handler_t enableOta;
         disable_ota_handler_t disableOta;

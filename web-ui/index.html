@@ -35,11 +35,18 @@
     <main class="container">
       <h1>
         RotorHazard OSD injector
-        <button type="button" class="inline" id="system-reboot">Reboot ESP</button>
+        <button type="button" class="inline" id="system-reboot">
+          Reboot ESP
+        </button>
       </h1>
       <small>
-        <div id="ota-enable">Want to update wirelessly? <button class="inline">Enable OTA</button></div>
-        <div id="ota-disable">Want to disable wireless updates? <button class="inline">Disable OTA</button></div>
+        <div id="ota-enable">
+          Want to update wirelessly? <button class="inline">Enable OTA</button>
+        </div>
+        <div id="ota-disable">
+          Want to disable wireless updates?
+          <button class="inline">Disable OTA</button>
+        </div>
       </small>
 
       <section id="wifi">
@@ -51,8 +58,8 @@
         </h2>
 
         <details>
-        <form id="wifi-form">
-            <strong>Update Credentials</label>
+          <form id="wifi-form">
+            <strong>Update Credentials</strong>
 
             <div class="grid">
               <label for="wifi-ssid-input">
@@ -62,12 +69,17 @@
 
               <label for="wifi-password-input">
                 Password
-                <input required type="password" id="wifi-password-input" name="password" />
+                <input
+                  required
+                  type="password"
+                  id="wifi-password-input"
+                  name="password"
+                />
               </label>
             </div>
 
             <button type="submit">Save Credentials</button>
-        </form>
+          </form>
         </details>
       </section>
 
@@ -75,27 +87,39 @@
         <h2>
           Hotspot
 
-          <button type="button" class="inline" id="hotspot-enable-btn">Enable</button>
+          <button type="button" class="inline" id="hotspot-enable-btn">
+            Enable
+          </button>
         </h2>
 
         <details>
-        <form id="hotspot-form">
-            <strong>Update Credentials</label>
+          <form id="hotspot-form">
+            <strong>Update Credentials</strong>
 
             <div class="grid">
               <label for="hotspot-ssid-input">
                 SSID
-                <input required type="text" id="hotspot-ssid-input" name="ssid" />
+                <input
+                  required
+                  type="text"
+                  id="hotspot-ssid-input"
+                  name="ssid"
+                />
               </label>
 
               <label for="hotspot-password-input">
                 Password
-                <input required type="password" id="hotspot-password-input" name="password" />
+                <input
+                  required
+                  type="password"
+                  id="hotspot-password-input"
+                  name="password"
+                />
               </label>
             </div>
 
             <button type="submit">Save Credentials</button>
-        </form>
+          </form>
         </details>
       </section>
 
@@ -148,8 +172,7 @@
           <form id="rh-select-pilot-form">
             <label for="rh-pilot-select">
               Shown Pilot
-              <select id="rh-pilot-select" name="pilotId">
-              </select>
+              <select id="rh-pilot-select" name="pilotId"></select>
             </label>
             <button type="button" class="secondary" id="rh-pilots-reload-btn">
               Reload Pilots
@@ -165,13 +188,27 @@
 
         <details>
           <form id="update-form">
-            <input type='file' name='update'>
+            <input type="file" name="update" />
             <select name="mode">
               <option value="code" selected>Code / Sketch</option>
               <option value="fs">UI / Filesystem</option>
             </select>
-            <input type='submit' value='Update'>
+            <input type="submit" value="Update" />
           </form>
+        </details>
+      </section>
+
+      <section id="logging">
+        <h2>Logging</h2>
+
+        <details>
+          <button type="button" id="toggle-fc-uses-main-serial">
+            __not_loaded__
+          </button>
+          <small
+            >Warning: Changes wont take affect until AFTER next reboot, you may
+            reboot using the reboot button at the top of the page</small
+          >
         </details>
       </section>
     </main>

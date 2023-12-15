@@ -6,6 +6,7 @@ import { Api } from "./api";
 import { setupRotorHazardSection } from "./sections/rh.section";
 import { setupHotspotSection } from "./sections/hotspot.section";
 import { setupOTASection } from "./sections/ota.section";
+import { setupLoggingSection } from "./sections/logging.section";
 
 document.addEventListener("DOMContentLoaded", async () => {
   setupAuthenticationOverlay();
@@ -13,6 +14,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   setupHotspotSection();
   setupWiFiSection();
   setupOTASection();
+  setupLoggingSection();
 
   Api.getAllData();
   Api.authenticate();

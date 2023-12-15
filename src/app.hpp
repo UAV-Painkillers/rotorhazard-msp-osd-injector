@@ -1,8 +1,6 @@
 #pragma once
 
-#ifndef FC_SERIAL_USES_MAIN_SERIAL
-    #include <SoftwareSerial.h>
-#endif
+#include <SoftwareSerial.h>
 
 #include "rotorhazard.hpp"
 #include "msp-controller.hpp"
@@ -25,9 +23,8 @@ class App {
         MSPController mspController;
         OTA ota;
 
-        #ifndef FC_SERIAL_USES_MAIN_SERIAL
-            EspSoftwareSerial::UART mspSoftSerial;
-        #endif 
+        EspSoftwareSerial::UART *mspSoftSerial;
+        Stream *mspSerial;
 
         void setupSerial(bool endOldSerial = true);
         void linkCallbacks();

@@ -3,26 +3,34 @@
 void App::setupSerial(bool endOldSerial) {
     uint32_t fc_msp_baud = EEPROMManager::data.fc_msp_baud == 0 ? DEFAULT_FC_SERIAL_BAUD : EEPROMManager::data.fc_msp_baud;
     uint32_t logging_baud = EEPROMManager::data.logging_baud == 0 ? DEFAULT_LOGGING_BAUD : EEPROMManager::data.logging_baud;
-    #ifdef FC_SERIAL_USES_MAIN_SERIAL
-        #define MSP_SERIAL Serial
-        #define LOGGING_SERIAL NULL
-
+    
+    if (EEPROMManager::data.fc_serial_uses_main_serial) {
         if (endOldSerial) {
             Serial.end();
         }
         Serial.begin(fc_msp_baud);
-    #else
-        #define MSP_SERIAL this->mspSoftSerial
-        #define LOGGING_SERIAL Serial
 
-        Serial.end();
-        Serial.begin(logging_baud);
+        this->mspSerial = &Serial;
 
-        if (endOldSerial) {
-            this->mspSoftSerial.end();
-        }
-        this->mspSoftSerial.begin(fc_msp_baud, EspSoftwareSerial::SWSERIAL_8N1, FC_SOFT_SERIAL_RX_PIN, FC_SOFT_SERIAL_TX_PIN);
-    #endif
+        logInline("App::setupSerial done, no logging");
+        return;
+    }
+
+    Serial.end();
+    Serial.begin(logging_baud);
+
+    if (this->mspSoftSerial == NULL || this->mspSoftSerial == nullptr) {
+        this->mspSoftSerial = new EspSoftwareSerial::UART();
+    }
+
+    if (endOldSerial) {
+        this->mspSoftSerial->end();
+    }
+
+    if (EEPROMManager::data.fc_soft_serial_tx_pin != -1 && EEPROMManager::data.fc_soft_serial_rx_pin != -1) {
+        this->mspSoftSerial->begin(fc_msp_baud, EspSoftwareSerial::SWSERIAL_8N1, EEPROMManager::data.fc_soft_serial_rx_pin, EEPROMManager::data.fc_soft_serial_tx_pin);
+        this->mspSerial = this->mspSoftSerial;
+    }
 
     logInline("App::setupSerial done");
 }
@@ -37,7 +45,7 @@ void App::setup() {
 
     this->webUI.setup();
     this->rotorHazard.setup();
-    this->mspController.setup(MSP_SERIAL);
+    this->mspController.setup(*this->mspSerial);
     this->wifiConnection.setup();
 
     logInline("App::setupSerial done");
@@ -276,6 +284,19 @@ void App::linkCallbacks() {
 
     this->webUI.setDisableOtaHandler([this]() {
         this->ota.disable();
+    });
+
+    this->webUI.setGetFcSerialUsesMainSerialHandler([this]() {
+        return EEPROMManager::data.fc_serial_uses_main_serial;
+    });
+
+    this->webUI.setToggleFcSerialUsesMainSerialHandler([this]() {
+        EEPROMManager::data.fc_serial_uses_main_serial = !EEPROMManager::data.fc_serial_uses_main_serial;
+        EEPROMManager::writeEEPROM();
+
+        this->setupSerial();
+
+        return EEPROMManager::data.fc_serial_uses_main_serial;
     });
 }
 

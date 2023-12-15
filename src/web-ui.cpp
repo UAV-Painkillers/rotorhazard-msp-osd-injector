@@ -480,6 +480,29 @@ void WebUI::setupRoutes()
 
         logLine("WebUi::server POST /api/ota/actions/disable finished"); });
 
+    this->server.on("/api/logging/actions/toggle-main-port-logging", HTTP_POST, [this]()
+                    {
+        logLine("WebUi::server POST /api/logging/actions/toggle-main-port-logging requested");
+
+        this->setDefaults();
+
+        if (!this->requireAuthentication()) {
+            return;
+        }
+
+        if (this->toggleFcSerialUsesMainSerial == NULL || this->toggleFcSerialUsesMainSerial == nullptr) {
+            logLine("WebUi::server POST /api/logging/actions/toggle-main-port-logging no toggleFcSerialUsesMainSerial handler");
+            this->server.send(500, "application/json", "{\"error\": \"Internal Server Error\"}");
+            logLine("WebUi::server POST /api/logging/actions/toggle-main-port-logging finished");
+            return;
+        }
+
+        bool fcUsesMainPortSerial = this->toggleFcSerialUsesMainSerial();
+
+        this->server.send(200, "application/json", "{\"success\": true, \"fcUsesMainPortSerial\": " + String(fcUsesMainPortSerial ? "true" : "false") + "}");
+
+        logLine("WebUi::server POST /api/logging/actions/toggle-main-port-logging finished"); });
+
     this->server.on("/api/all", HTTP_GET, [this]()
                     {
         // collect all data of all HTTP_GET endpoints above and send in one big response
@@ -536,6 +559,13 @@ void WebUI::setupRoutes()
             return;
         }
 
+        if (this->getFcSerialUsesMainSerial == NULL || this->getFcSerialUsesMainSerial == nullptr) {
+            logLine("WebUi::server GET /api/all no getFcSerialUsesMainSerial handler");
+            this->server.send(500, "application/json", "{\"error\": \"Internal Server Error\"}");
+            logLine("WebUi::server GET /api/all finished");
+            return;
+        }
+
         StaticJsonDocument<1024> doc;
         // wifi subobject for wifi and hotspot
         JsonObject network = doc.createNestedObject("wifi");
@@ -569,6 +599,7 @@ void WebUI::setupRoutes()
         JsonObject serial = doc.createNestedObject("serial");
         serial["flightControllerBaudRate"] = this->getFlightControllerBaudRate();
         serial["loggingBaudRate"] = this->getLoggingBaudRate();
+        serial["fcUsesMainPortSerial"] = this->getFcSerialUsesMainSerial();
 
 
         // ota subobject
@@ -1110,4 +1141,14 @@ void WebUI::setDisableOtaHandler(disable_ota_handler_t handler)
 void WebUI::setGetOtaEnabledHandler(get_ota_enabled_handler_t handler)
 {
     this->getOtaEnabled = handler;
+}
+
+void WebUI::setToggleFcSerialUsesMainSerialHandler(toggle_fc_serial_uses_main_serial_handler_t handler)
+{
+    this->toggleFcSerialUsesMainSerial = handler;
+}
+
+void WebUI::setGetFcSerialUsesMainSerialHandler(get_fc_serial_uses_main_serial_handler_t handler)
+{
+    this->getFcSerialUsesMainSerial = handler;
 }
