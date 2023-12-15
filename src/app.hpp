@@ -25,6 +25,7 @@ class App {
 
         EspSoftwareSerial::UART *mspSoftSerial;
         Stream *mspSerial;
+        Stream *loggingSerial;
 
         void setupSerial(bool endOldSerial = true);
         void linkCallbacks();

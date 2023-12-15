@@ -11,6 +11,7 @@ void App::setupSerial(bool endOldSerial) {
         Serial.begin(fc_msp_baud);
 
         this->mspSerial = &Serial;
+        this->loggingSerial = NULL;
 
         logInline("App::setupSerial done, no logging");
         return;
@@ -18,6 +19,8 @@ void App::setupSerial(bool endOldSerial) {
 
     Serial.end();
     Serial.begin(logging_baud);
+
+    this->loggingSerial = &Serial;
 
     if (this->mspSoftSerial == NULL || this->mspSoftSerial == nullptr) {
         this->mspSoftSerial = new EspSoftwareSerial::UART();
@@ -31,6 +34,7 @@ void App::setupSerial(bool endOldSerial) {
         this->mspSoftSerial->begin(fc_msp_baud, EspSoftwareSerial::SWSERIAL_8N1, EEPROMManager::data.fc_soft_serial_rx_pin, EEPROMManager::data.fc_soft_serial_tx_pin);
         this->mspSerial = this->mspSoftSerial;
     }
+    this->mspSerial = this->mspSoftSerial;
 
     logInline("App::setupSerial done");
 }
@@ -45,7 +49,11 @@ void App::setup() {
 
     this->webUI.setup();
     this->rotorHazard.setup();
-    this->mspController.setup(*this->mspSerial);
+    if (this->mspSerial == NULL || this->mspSerial == nullptr) {
+        logLine("App::setupSerial mspSerial is NULL, skipping MSP Controller setup");
+    } else {
+        this->mspController.setup(*this->mspSerial);
+    }
     this->wifiConnection.setup();
 
     logInline("App::setupSerial done");
@@ -53,7 +61,9 @@ void App::setup() {
 
 void App::loop() {
     this->wifiConnection.loop();
-    this->mspController.loop();
+    if (this->mspSerial != NULL && this->mspSerial != nullptr) {
+        this->mspController.loop();
+    }
     this->rotorHazard.loop();
     this->webUI.loop();
     this->ota.loop();
@@ -293,9 +303,6 @@ void App::linkCallbacks() {
     this->webUI.setToggleFcSerialUsesMainSerialHandler([this]() {
         EEPROMManager::data.fc_serial_uses_main_serial = !EEPROMManager::data.fc_serial_uses_main_serial;
         EEPROMManager::writeEEPROM();
-
-        this->setupSerial();
-
         return EEPROMManager::data.fc_serial_uses_main_serial;
     });
 }
