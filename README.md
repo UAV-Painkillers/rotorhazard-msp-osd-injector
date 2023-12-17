@@ -2,6 +2,11 @@
 
 This project, also known as "RotorHazard OSD Injector", is a firmware for ESP8266. It connects via websockets (WiFi) to a RotorHazard instance. RotorHazard is a Race Timer for FPV drones which tracks the time one needs to finish a lap in a race and automatically tracks the race with up to 8 pilots. The ESP is connected via a serial UART to the flight controller of the drone and sends "MSP" commands to set the internal name of the drone to messages that represent events that happen in the race timer.
 
+> ## DEPRECATED
+> well kinda... at least for people who use an ELRS Transmission system with a ELRS TX that has an ELRS Backpack connected to it or HDZero Goggles (or simmiliar) with a ELRS Backpack that supports rendering custom OSD Elements.
+> If this describes you, you should check out this project instead:
+> [UAV-Painkillers/VRxC_ELRS](https://github.com/UAV-Painkillers/VRxC_ELRS)
+
 ## Prerequisites
 
 You need an ESP of the ESP8266 family. The simplest, smallest, and most lightweight option is to buy a "BetaFPV ELRS RX Lite" receiver which has an ESP8285 onboard and exactly one UART available for communicating with the drone.
